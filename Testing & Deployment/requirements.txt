@@ -1,0 +1,35 @@
+# requirements.txt
+# Core Flask dependencies
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+Flask-CORS==4.0.0
+Werkzeug==2.3.7
+
+# Database
+SQLAlchemy==2.0.21
+
+# Computer Vision
+opencv-python==4.8.1.78
+opencv-contrib-python==4.8.1.78
+numpy>=2.0.0
+
+# Audio Processing
+librosa==0.10.1
+soundfile==0.12.1
+numpy>=2.0.0
+
+
+# Machine Learning
+scikit-learn>=1.5.1
+
+# Data handling
+pickle-mixin==1.0.2
+
+# Development tools
+python-dotenv==1.0.0
+
+# Optional: For production deployment
+gunicorn==21.2.0
+
+# Optional: For enhanced security
+cryptography==41.0.4

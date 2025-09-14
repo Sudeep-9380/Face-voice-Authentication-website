@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biometric Authentication System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #b9c4f6 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .auth-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .dashboard {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(246, 244, 244, 0.1);
+        }
+
+        .biometric-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .biometric-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            color: white;
+        }
+
+        .voice-btn {
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+        }
+
+        .voice-btn:hover {
+            box-shadow: 0 10px 20px rgba(240, 147, 251, 0.3);
+        }
+
+        .feature-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .nav-pills .nav-link {
+            border-radius: 25px;
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-pills .nav-link.active {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+
+        #videoPreview, #regVideo {
+            border-radius: 15px;
+            border: 3px solid #667eea;
+        }
+
+        #canvas, #regCanvas {
+            border-radius: 15px;
+            border: 3px solid #667eea;
+        }
+
+        .data-view {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <!-- Navigation -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-8">
+                <ul class="nav nav-pills justify-content-center" id="authTabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="pill" href="#login">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="pill" href="#register">
+                            <i class="fas fa-user-plus me-2"></i>Register
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="pill" href="#dashboard" id="dashboardTab" style="display: none;">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="pill" href="#admin">
+                            <i class="fas fa-database me-2"></i>View Data
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Login Tab -->
+            <div class="tab-pane fade show active" id="login">
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <div class="auth-container p-5">
+                            <div class="text-center mb-4">
+                                <h2 class="fw-bold text-dark">
+                                    <i class="fas fa-shield-alt me-2"></i>Secure Login
+                                </h2>
+                                <p class="text-muted">Use your face or voice to authenticate</p>
+                            </div>
+                            
+                            <form id="loginForm">
+                                <div class="mb-3">
+                                    <label class="form-label">Username</label>
+                                    <input type="text" class="form-control" id="loginUsername" required>
+                                </div>
+                                
+                                <div class="row text-center">
+                                    <div class="col-6 mb-3">
+                                        <button type="button" class="btn biometric-btn w-100" onclick="startFaceAuth()">
+                                            <i class="fas fa-camera me-2"></i>Face Login
+                                        </button>
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <button type="button" class="btn biometric-btn voice-btn w-100" onclick="startVoiceAuth()">
+                                            <i class="fas fa-microphone me-2"></i>Voice Login
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <small class="text-muted">Or use traditional password</small>
+                                    <div class="mt-2">
+                                        <input type="password" class="form-control mb-2" id="loginPassword" placeholder="Password (fallback)">
+                                        <button type="submit" class="btn btn-outline-primary">Login with Password</button>
+                                    </div>
+                                </div>
+                            </form>
+                            
+                            <!-- Biometric Authentication Area -->
+                            <div id="biometricArea" style="display: none;" class="mt-4">
+                                <div class="text-center">
+                                    <video id="videoPreview" width="300" height="225" autoplay style="display: none;"></video>
+                                    <canvas id="canvas" width="300" height="225" style="display: none;"></canvas>
+                                    <div id="audioControls" style="display: none;">
+                                        <i class="fas fa-microphone fa-3x text-danger mb-3"></i>
+                                        <p>Say: "My voice is my password"</p>
+                                        <button type="button" class="btn btn-danger" id="recordBtn">
+                                            <i class="fas fa-record-vinyl me-2"></i>Start Recording
+                                        </button>
+                                        <button type="button" class="btn btn-success d-none" id="stopBtn">
+                                            <i class="fas fa-stop me-2"></i>Stop Recording
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center mt-3">
+                                    <button type="button" class="btn btn-secondary me-2" onclick="cancelBiometric()">Cancel</button>
+                                    <button type="button" class="btn btn-primary" id="authenticateBtn" onclick="authenticate()" style="display: none;">
+                                        Authenticate
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="loginStatus"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Register Tab -->
+            <div class="tab-pane fade" id="register">
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <div class="auth-container p-5">
+                            <div class="text-center mb-4">
+                                <h2 class="fw-bold text-dark">
+                                    <i class="fas fa-user-plus me-2"></i>Create Account
+                                </h2>
+                                <p class="text-muted">Register with biometric authentication</p>
+                            </div>
+                            
+                            <form id="registerForm">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Username</label>
+                                        <input type="text" class="form-control" id="regUsername" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="regEmail" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="regPassword" required>
+                                </div>
+                                
+                                <div class="row text-center mb-3">
+                                    <div class="col-md-6 mb-3">
+                                        <h5>Face Registration</h5>
+                                        <button type="button" class="btn biometric-btn w-100" onclick="captureFace()">
+                                            <i class="fas fa-camera me-2"></i>Capture Face
+                                        </button>
+                                        <div id="faceStatus" class="mt-2"></div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <h5>Voice Registration</h5>
+                                        <button type="button" class="btn biometric-btn voice-btn w-100" onclick="captureVoice()">
+                                            <i class="fas fa-microphone me-2"></i>Record Voice
+                                        </button>
+                                        <div id="voiceStatus" class="mt-2"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Biometric Capture Area -->
+                                <div id="captureArea" style="display: none;" class="mb-3">
+                                    <div class="text-center">
+                                        <video id="regVideo" width="300" height="225" autoplay style="display: none;"></video>
+                                        <canvas id="regCanvas" width="300" height="225" style="display: none;"></canvas>
+                                        
+                                        <div id="regAudioControls" style="display: none;">
+                                            <i class="fas fa-microphone fa-3x text-danger mb-3"></i>
+                                            <p>Say: "My voice is my password"</p>
+                                            <button type="button" class="btn btn-danger" id="regRecordBtn">
+                                                <i class="fas fa-record-vinyl me-2"></i>Start Recording
+                                            </button>
+                                            <button type="button" class="btn btn-success d-none" id="regStopBtn">
+                                                <i class="fas fa-stop me-2"></i>Stop Recording
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="text-center mt-3">
+                                        <button type="button" class="btn btn-secondary me-2" onclick="cancelCapture()">Cancel</button>
+                                        <button type="button" class="btn btn-success" id="captureBtn" onclick="saveBiometric()" style="display: none;">
+                                            Save
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-user-plus me-2"></i>Create Account
+                                    </button>
+                                </div>
+                            </form>
+                            
+                            <div id="registerStatus"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Tab -->
+            <div class="tab-pane fade" id="dashboard">
+                <div class="row justify-content-center">
+                    <div class="col-md-10">
+                        <div class="dashboard p-5">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h2 class="fw-bold text-dark">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                </h2>
+                                <button class="btn btn-outline-danger" onclick="logout()">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </button>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4 mb-4">
+                                    <div class="card feature-card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-user fa-3x mb-3"></i>
+                                            <h5>Profile</h5>
+                                            <p id="userInfo">Welcome back!</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4 mb-4">
+                                    <div class="card feature-card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-shield-alt fa-3x mb-3"></i>
+                                            <h5>Security</h5>
+                                            <p>Biometric authentication enabled</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4 mb-4">
+                                    <div class="card feature-card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-history fa-3x mb-3"></i>
+                                            <h5>Login History</h5>
+                                            <p>Last login: <span id="lastLogin">Just now</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5><i class="fas fa-cog me-2"></i>Account Settings</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <button class="btn btn-primary w-100 mb-2">
+                                                        <i class="fas fa-microphone me-2"></i>Update Voice Data
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row mt-3">
+                                                <div class="col-12">
+                                                    <button class="btn btn-info w-100" onclick="loadLoginHistory()">
+                                                        <i class="fas fa-history me-2"></i>View Login History
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Login History Display -->
+                            <div id="loginHistoryContainer" style="display: none;" class="mt-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5><i class="fas fa-clock me-2"></i>Recent Login History</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="loginHistoryData"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin/Data View Tab -->
+            <div class="tab-pane fade" id="admin">
+                <div class="row justify-content-center">
+                    <div class="col-md-10">
+                        <div class="dashboard p-5">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h2 class="fw-bold text-dark">
+                                    <i class="fas fa-database me-2"></i>Database View
+                                </h2>
+                                <button class="btn btn-primary" onclick="loadAllUsers()">
+                                    <i class="fas fa-sync me-2"></i>Refresh Data
+                                </button>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-12 mb-4">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5><i class="fas fa-users me-2"></i>Registered Users</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="usersData" class="data-view">
+                                                <p class="text-muted">Click "Refresh Data" to load users from MySQL database</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6><i class="fas fa-chart-bar me-2"></i>Statistics</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="statsData">
+                                                <p><strong>Total Users:</strong> <span id="totalUsers">0</span></p>
+                                                <p><strong>Face Registrations:</strong> <span id="faceCount">0</span></p>
+                                                <p><strong>Voice Registrations:</strong> <span id="voiceCount">0</span></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6><i class="fas fa-server me-2"></i>Connection Status</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="connectionStatus">
+                                                <p class="text-warning">
+                                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                                    Backend not connected. Install dependencies and run server.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global variables
+        let currentStream = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let currentAuthType = null;
+        let currentUser = null;
+        
+        // API Base URL - change this to your backend URL
+        const API_BASE = 'http://localhost:3000/api';
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Biometric Authentication System Loaded');
+            
+            // Form submission handlers
+            document.getElementById('loginForm').addEventListener('submit', handlePasswordLogin);
+            document.getElementById('registerForm').addEventListener('submit', handleRegistration);
+            
+            // Audio recording handlers
+            document.getElementById('recordBtn').addEventListener('click', startVoiceRecording);
+            document.getElementById('stopBtn').addEventListener('click', stopVoiceRecording);
+            document.getElementById('regRecordBtn').addEventListener('click', startVoiceRecording);
+            document.getElementById('regStopBtn').addEventListener('click', stopVoiceRecording);
+            
+            // Test backend connection
+            testBackendConnection();
+        });
+
+        // Backend API Functions
+        async function apiRequest(endpoint, method = 'GET', data = null) {
+            try {
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                };
+                
+                if (data) {
+                    options.body = JSON.stringify(data);
+                }
+                
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                return await response.json();
+                
+            } catch (error) {
+                console.error('API Request failed:', error);
+                return { success: false, message: 'Backend connection failed' };
+            }
+        }
+
+        async function testBackendConnection() {
+            const result = await apiRequest('/users');
+            
+            if (result.success) {
+                document.getElementById('connectionStatus').innerHTML = `
+                    <p class="text-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Backend connected successfully!
+                    </p>
+                `;
+                console.log('✅ Backend connected');
+            } else {
+                document.getElementById('connectionStatus').innerHTML = `
+                    <p class="text-danger">
+                        <i class="fas fa-times-circle me-2"></i>
+                        Backend connection failed. Start your server first.
+                    </p>
+                `;
+                console.log('❌ Backend not connected');
+            }
+        }
+
+        async function loadAllUsers() {
+            const result = await apiRequest('/users');
+            
+            if (result.success) {
+                displayUsersData(result.users);
+                updateStats(result.users);
+            } else {
+                document.getElementById('usersData').innerHTML = `
+                    <p class="text-danger">Failed to load users: ${result.message}</p>
+                `;
+            }
+        }
+
+        function displayUsersData(users) {
+            if (users.length === 0) {
+                document.getElementById('usersData').innerHTML = `
+                    <p class="text-muted">No users registered yet</p>
+                `;
+                return;
+            }
+            
+            let html = '<div class="table-responsive"><table class="table table-striped">';
+            html += '<thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Biometrics</th><th>Created</th><th>Last Login</th></tr></thead><tbody>';
+            
+            users.forEach(user => {
+                const biometrics = [];
+                if (user.face_data) biometrics.push('Face');
+                if (user.voice_data) biometrics.push('Voice');
+                
+                html += `
+                    <tr>
+                        <td>${user.id}</td>
+                        <td>${user.username}</td>
+                        <td>${user.email}</td>
+                        <td>${biometrics.join(', ') || 'None'}</td>
+                        <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                        <td>${user.last_login ? new Date(user.last_login).toLocaleString() : 'Never'}</td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table></div>';
+            document.getElementById('usersData').innerHTML = html;
+        }
+
+        function updateStats(users) {
+            const faceCount = users.filter(u => u.face_data).length;
+            const voiceCount = users.filter(u => u.voice_data).length;
+            
+            document.getElementById('totalUsers').textContent = users.length;
+            document.getElementById('faceCount').textContent = faceCount;
+            document.getElementById('voiceCount').textContent = voiceCount;
+        }
+
+        async function loadLoginHistory() {
+            if (!currentUser) return;
+            
+            const result = await apiRequest(`/user/${currentUser.username}/history`);
+            
+            if (result.success) {
+                displayLoginHistory(result.history);
+                document.getElementById('loginHistoryContainer').style.display = 'block';
+            }
+        }
+
+        function displayLoginHistory(history) {
+            if (history.length === 0) {
+                document.getElementById('loginHistoryData').innerHTML = `
+                    <p class="text-muted">No login history available</p>
+                `;
+                return;
+            }
+            
+            let html = '<div class="table-responsive"><table class="table table-sm">';
+            html += '<thead><tr><th>Method</th><th>Time</th><th>Status</th></tr></thead><tbody>';
+            
+            history.forEach(entry => {
+                const status = entry.success ? 
+                    '<span class="badge bg-success">Success</span>' : 
+                    '<span class="badge bg-danger">Failed</span>';
+                    
+                html += `
+                    <tr>
+                        <td><i class="fas fa-${entry.auth_type === 'face' ? 'camera' : entry.auth_type === 'voice' ? 'microphone' : 'key'} me-2"></i>${entry.auth_type}</td>
+                        <td>${new Date(entry.attempt_time).toLocaleString()}</td>
+                        <td>${status}</td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table></div>';
+            document.getElementById('loginHistoryData').innerHTML = html;
+        }
+
+        // Updated Registration Function
+        async function handleRegistration(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            
+            const registrationData = {
+                username: username,
+                email: email,
+                password: password,
+                faceData: window.tempFaceData || null,
+                voiceData: window.tempVoiceData ? JSON.stringify(window.tempVoiceData) : null
+            };
+            
+            showStatus('registerStatus', 'Creating account...', 'info');
+            
+            const result = await apiRequest('/register', 'POST', registrationData);
+            
+            if (result.success) {
+                showStatus('registerStatus', 'Account created successfully! Data saved to MySQL database.', 'success');
+                
+                console.log('✅ User registered with ID:', result.userId);
+                
+                // Clear temporary data
+                window.tempFaceData = null;
+                window.tempVoiceData = null;
+                
+                // Switch to login tab
+                setTimeout(() => {
+                    document.querySelector('[href="#login"]').click();
+                    document.getElementById('registerForm').reset();
+                    document.getElementById('faceStatus').innerHTML = '';
+                    document.getElementById('voiceStatus').innerHTML = '';
+                }, 2000);
+            } else {
+                showStatus('registerStatus', `Registration failed: ${result.message}`, 'danger');
+            }
+        }
+
+        // Updated Login Functions
+        async function handlePasswordLogin(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            showStatus('loginStatus', 'Authenticating...', 'info');
+            
+            const result = await apiRequest('/login/password', 'POST', { username, password });
+            
+            if (result.success) {
+                showStatus('loginStatus', 'Password login successful!', 'success');
+                loginSuccess(result.user);
+            } else {
+                showStatus('loginStatus', result.message, 'danger');
+            }
+        }
+
+        async function authenticate() {
+            const username = document.getElementById('loginUsername').value;
+            
+            if (currentAuthType === 'face') {
+                await authenticateFace(username);
+            } else if (currentAuthType === 'voice') {
+                await authenticateVoice(username);
+            }
+        }
+
+        async function authenticateFace(username) {
+            try {
+                showStatus('loginStatus', 'Analyzing face...', 'info');
+                
+                // Capture current frame
+                const video = document.getElementById('videoPreview');
+                const canvas = document.getElementById('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0);
+                
+                const currentFaceData = canvas.toDataURL('image/jpeg');
+                
+                const result = await apiRequest('/login/face', 'POST', {
+                    username: username,
+                    faceData: currentFaceData
+                });
+                
+                if (result.success) {
+                    showStatus('loginStatus', 'Face authentication successful!', 'success');
+                    setTimeout(() => loginSuccess(result.user), 1000);
+                } else {
+                    showStatus('loginStatus', result.message, 'danger');
+                }
+                
+            } catch (error) {
+                console.error('Face authentication error:', error);
+                showStatus('loginStatus', 'Face authentication failed. Please try again.', 'danger');
+            }
+        }
+
+        async function authenticateVoice(username) {
+            try {
+                showStatus('loginStatus', 'Processing voice...', 'info');
+                
+                // Convert recorded chunks to base64 for transmission
+                const voiceBlob = new Blob(recordedChunks, { type: 'audio/webm' });
+                const voiceData = await blobToBase64(voiceBlob);
+                
+                const result = await apiRequest('/login/voice', 'POST', {
+                    username: username,
+                    voiceData: voiceData
+                });
+                
+                if (result.success) {
+                    showStatus('loginStatus', 'Voice authentication successful!', 'success');
+                    setTimeout(() => loginSuccess(result.user), 1000);
+                } else {
+                    showStatus('loginStatus', result.message, 'danger');
+                }
+                
+            } catch (error) {
+                console.error('Voice authentication error:', error);
+                showStatus('loginStatus', 'Voice authentication failed. Please try again.', 'danger');
+            }
+        }
+
+        // Utility function to convert blob to base64
+        function blobToBase64(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        // Face Authentication Functions
+        async function startFaceAuth() {
+            try {
+                const username = document.getElementById('loginUsername').value;
+                if (!username) {
+                    showStatus('loginStatus', 'Please enter your username first', 'danger');
+                    return;
+                }
+                
+                currentAuthType = 'face';
+                document.getElementById('biometricArea').style.display = 'block';
+                document.getElementById('videoPreview').style.display = 'block';
+                document.getElementById('audioControls').style.display = 'none';
+                
+                // Start camera
+                currentStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                document.getElementById('videoPreview').srcObject = currentStream;
+                
+                showStatus('loginStatus', 'Position your face in the camera and click Authenticate', 'info');
+                document.getElementById('authenticateBtn').style.display = 'inline-block';
+                
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                showStatus('loginStatus', 'Camera access denied or not available', 'danger');
+            }
+        }
+
+        async function startVoiceAuth() {
+            try {
+                const username = document.getElementById('loginUsername').value;
+                if (!username) {
+                    showStatus('loginStatus', 'Please enter your username first', 'danger');
+                    return;
+                }
+                
+                currentAuthType = 'voice';
+                document.getElementById('biometricArea').style.display = 'block';
+                document.getElementById('videoPreview').style.display = 'none';
+                document.getElementById('audioControls').style.display = 'block';
+                
+                showStatus('loginStatus', 'Click "Start Recording" and say the passphrase', 'info');
+                
+            } catch (error) {
+                console.error('Error setting up voice auth:', error);
+                showStatus('loginStatus', 'Voice authentication setup failed', 'danger');
+            }
+        }
+
+        function cancelBiometric() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+            }
+            
+            document.getElementById('biometricArea').style.display = 'none';
+            document.getElementById('authenticateBtn').style.display = 'none';
+            currentAuthType = null;
+            
+            showStatus('loginStatus', 'Authentication cancelled', 'info');
+        }
+
+        // Registration Functions
+        async function captureFace() {
+            try {
+                document.getElementById('captureArea').style.display = 'block';
+                document.getElementById('regVideo').style.display = 'block';
+                document.getElementById('regCanvas').style.display = 'none';
+                document.getElementById('regAudioControls').style.display = 'none';
+                
+                currentStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                document.getElementById('regVideo').srcObject = currentStream;
+                
+                document.getElementById('captureBtn').style.display = 'inline-block';
+                document.getElementById('captureBtn').onclick = () => saveBiometric('face');
+                
+                showStatus('registerStatus', 'Position your face and click Save when ready', 'info');
+                
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                showStatus('registerStatus', 'Camera access denied or not available', 'danger');
+            }
+        }
+
+        async function captureVoice() {
+            try {
+                document.getElementById('captureArea').style.display = 'block';
+                document.getElementById('regVideo').style.display = 'none';
+                document.getElementById('regAudioControls').style.display = 'block';
+                
+                showStatus('registerStatus', 'Click "Start Recording" to record your voice', 'info');
+                
+            } catch (error) {
+                console.error('Error setting up voice capture:', error);
+                showStatus('registerStatus', 'Voice capture setup failed', 'danger');
+            }
+        }
+
+        function saveBiometric(type = null) {
+            if (type === 'face' || currentAuthType === 'face') {
+                saveFaceData();
+            } else if (currentAuthType === 'voice') {
+                saveVoiceData();
+            }
+        }
+
+        function saveFaceData() {
+            try {
+                const video = document.getElementById('regVideo');
+                const canvas = document.getElementById('regCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0);
+                
+                const faceData = canvas.toDataURL('image/jpeg');
+                window.tempFaceData = faceData;
+                
+                showStatus('faceStatus', 'Face captured successfully!', 'success');
+                cancelCapture();
+                
+            } catch (error) {
+                console.error('Error processing face data:', error);
+                showStatus('faceStatus', 'Error processing face. Please try again.', 'danger');
+            }
+        }
+
+        function saveVoiceData() {
+            showStatus('voiceStatus', 'Voice recorded successfully!', 'success');
+            window.tempVoiceData = recordedChunks;
+            cancelCapture();
+        }
+
+        function cancelCapture() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+            }
+            
+            document.getElementById('captureArea').style.display = 'none';
+            document.getElementById('captureBtn').style.display = 'none';
+            
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+            recordedChunks = [];
+            
+            currentAuthType = null;
+        }
+
+        // Voice Recording Functions
+        async function startVoiceRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                recordedChunks = [];
+                
+                mediaRecorder.ondataavailable = function(event) {
+                    if (event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+                
+                mediaRecorder.onstop = function() {
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                
+                mediaRecorder.start();
+                
+                // Update UI
+                document.getElementById('recordBtn').classList.add('d-none');
+                document.getElementById('stopBtn').classList.remove('d-none');
+                document.getElementById('regRecordBtn').classList.add('d-none');
+                document.getElementById('regStopBtn').classList.remove('d-none');
+                
+                showStatus('registerStatus', 'Recording... Say the passphrase clearly', 'info');
+                
+            } catch (error) {
+                console.error('Error accessing microphone:', error);
+                showStatus('registerStatus', 'Microphone access denied or not available', 'danger');
+            }
+        }
+
+        function stopVoiceRecording() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                
+                // Update UI
+                document.getElementById('recordBtn').classList.remove('d-none');
+                document.getElementById('stopBtn').classList.add('d-none');
+                document.getElementById('regRecordBtn').classList.remove('d-none');
+                document.getElementById('regStopBtn').classList.add('d-none');
+                
+                if (document.getElementById('captureArea').style.display === 'block') {
+                    document.getElementById('captureBtn').style.display = 'inline-block';
+                    document.getElementById('captureBtn').onclick = () => saveBiometric('voice');
+                } else {
+                    document.getElementById('authenticateBtn').style.display = 'inline-block';
+                }
+                
+                showStatus('registerStatus', 'Voice recorded! Click Save to store it.', 'success');
+            }
+        }
+
+        function loginSuccess(user) {
+            currentUser = user;
+            
+            // Update dashboard info
+            document.getElementById('userInfo').textContent = `Welcome, ${user.username}!`;
+            document.getElementById('lastLogin').textContent = user.lastLogin ? 
+                new Date(user.lastLogin).toLocaleString() : 'First login';
+            
+            // Show dashboard tab
+            document.getElementById('dashboardTab').style.display = 'block';
+            document.querySelector('[href="#dashboard"]').click();
+            
+            // Clean up
+            cancelBiometric();
+            document.getElementById('loginForm').reset();
+            
+            console.log('✅ Login successful for user:', user.username);
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('dashboardTab').style.display = 'none';
+            document.getElementById('loginHistoryContainer').style.display = 'none';
+            document.querySelector('[href="#login"]').click();
+            showStatus('loginStatus', 'Logged out successfully', 'info');
+        }
+
+        // Utility Functions
+        function showStatus(elementId, message, type) {
+            const statusElement = document.getElementById(elementId);
+            statusElement.innerHTML = `
+                <div class="alert alert-${type === 'danger' ? 'danger' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info'} mt-3">
+                    ${message}
+                </div>
+            `;
+            
+            // Auto-hide success messages after 3 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusElement.innerHTML = '';
+                }, 3000);
+            }
+        }
+
+        // Debug function to view stored data in console
+        function viewDatabaseData() {
+            loadAllUsers();
+            console.log('Check the "View Data" tab to see database contents');
+        }
+
+        // Update biometric data functions
+        async function updateFaceData() {
+            if (!currentUser) {
+                alert('Please log in first');
+                return;
+            }
+            
+            try {
+                document.getElementById('captureArea').style.display = 'block';
+                document.getElementById('regVideo').style.display = 'block';
+                document.getElementById('regCanvas').style.display = 'none';
+                document.getElementById('regAudioControls').style.display = 'none';
+                
+                currentStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                document.getElementById('regVideo').srcObject = currentStream;
+                
+                document.getElementById('captureBtn').style.display = 'inline-block';
+                document.getElementById('captureBtn').onclick = () => updateUserFace();
+                
+                alert('Position your face and click Save to update face data');
+                
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                alert('Camera access denied or not available');
+            }
+        }
+
+        async function updateVoiceData() {
+            if (!currentUser) {
+                alert('Please log in first');
+                return;
+            }
+            
+            try {
+                document.getElementById('captureArea').style.display = 'block';
+                document.getElementById('regVideo').style.display = 'none';
+                document.getElementById('regAudioControls').style.display = 'block';
+                
+                alert('Click "Start Recording" to update your voice data');
+                
+            } catch (error) {
+                console.error('Error setting up voice update:', error);
+                alert('Voice update setup failed');
+            }
+        }
+
+        async function updateUserFace() {
+            try {
+                const video = document.getElementById('regVideo');
+                const canvas = document.getElementById('regCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0);
+                
+                const faceData = canvas.toDataURL('image/jpeg');
+                
+                // Call backend API to update face data
+                const result = await apiRequest(`/user/${currentUser.id}/update-face`, 'POST', {
+                    faceData: faceData
+                });
+                
+                if (result.success) {
+                    alert('Face data updated successfully!');
+                } else {
+                    alert('Failed to update face data: ' + result.message);
+                }
+                
+                cancelCapture();
+                
+            } catch (error) {
+                console.error('Error updating face data:', error);
+                alert('Error updating face data');
+            }
+        }
+    </script>
+</body>
+</html>    <button class="btn btn-primary w-100 mb-2">
+                                                        
