@@ -80,7 +80,7 @@ If mismatch → ❌ Access Denied
 
 💻 Installation & Setup
 1️⃣ Clone the Repository
-git clone https://github.com/your-username/your-repository-name.git
+git clone https://github.com/Sudeep-9380/Face-voice-Authentication-website.git
 cd your-repository-name
 
 2️⃣ Backend Setup
@@ -127,4 +127,5 @@ Bachelor of Engineering – Computer Science & Engineering (AI)
 📜 License
 
 This project is developed for academic and educational purposes.
+
 
