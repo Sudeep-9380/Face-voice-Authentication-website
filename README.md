@@ -5,8 +5,8 @@ A secure web-based authentication system that verifies users using Face Recognit
 This project was developed as a team-based major project to implement AI-powered multi-factor biometric authentication for enhanced security and real-world applications.
 
 👥 Team Members
-K Sudeep Gouda
-Afsa saboo
+K Sudeep Gouda,
+Afsa saboo,
 B Sai dikshitha
 
 📌 Project Overview
@@ -127,3 +127,4 @@ Bachelor of Engineering – Computer Science & Engineering (AI)
 📜 License
 
 This project is developed for academic and educational purposes.
+
