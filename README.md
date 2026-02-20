@@ -1,5 +1,5 @@
 ﻿# Face-voice-Authentication-website
-🔐 Face & Voice Authentication System
+ Face & Voice Authentication System
 
 A secure web-based authentication system that verifies users using Face Recognition and Voice Recognition instead of traditional password-based login methods.
 This project was developed as a team-based major project to implement AI-powered multi-factor biometric authentication for enhanced security and real-world applications.
@@ -9,15 +9,15 @@ K Sudeep Gouda,
 Afsa saboo,
 B Sai dikshitha
 
-📌 Project Overview
+ Project Overview
 Traditional password systems are vulnerable to hacking, phishing, and brute-force attacks.
 This system improves security by combining:
 
-👤 Face Recognition
-🎤 Voice Recognition
+ Face Recognition
+ Voice Recognition
 Access is granted only when both biometrics match successfully.
 
-🚀 Key Features
+ Key Features
 
 Real-time Face Detection using Webcam
 Voice Authentication using Microphone
@@ -45,7 +45,7 @@ PyAudio
 🔹 Database
 MySQL
 
-📂 Project Structure
+ Project Structure
 PROJECT/
 │
 ├── backend/                 # Backend logic and AI models
@@ -62,15 +62,15 @@ PROJECT/
 ├── README.md
 ├── .gitignore
 
-⚙️ How the System Works
-📝 Registration Phase
+ How the System Works
+ Registration Phase
 
 User enters personal details.
 Webcam captures face data.
 Microphone records voice sample.
 Biometric features are extracted.
 Data is securely stored in the database.
-🔐 Authentication Phase
+ Authentication Phase
 User attempts login.
 Live face is captured and analyzed.
 Live voice sample is recorded.
@@ -78,8 +78,8 @@ System compares both with stored biometric data.
 If matched → ✅ Access Granted
 If mismatch → ❌ Access Denied
 
-💻 Installation & Setup
-1️⃣ Clone the Repository
+ Installation & Setup
+1️ Clone the Repository
 git clone https://github.com/Sudeep-9380/Face-voice-Authentication-website.git
 cd your-repository-name
 
@@ -97,21 +97,21 @@ npm start
 Open in browser:
 http://localhost:5000
 
-🔒 Security Advantages
+ Security Advantages
 Eliminates password dependency
 Hard to spoof
 Dual biometric authentication
 Real-time verification
 Improved data protection
 
-🔮 Future Enhancements
+ Future Enhancements
 Liveness Detection (Anti-Spoofing)
 Deep Learning-based Face Recognition (CNN Models)
 Encrypted Biometric Storage
 Cloud Deployment (AWS / Azure)
 Mobile Application Integration
 
-🌍 Real-World Applications
+ Real-World Applications
 
 Banking Authentication Systems
 Online Examination Portals
@@ -119,7 +119,7 @@ Government Secure Portals
 Smart Attendance Systems
 Enterprise Access Control
 
-🎓 Academic Information
+ Academic Information
 
 Developed as a Major Project for
 Bachelor of Engineering – Computer Science & Engineering (AI)
@@ -127,5 +127,6 @@ Bachelor of Engineering – Computer Science & Engineering (AI)
 📜 License
 
 This project is developed for academic and educational purposes.
+
 
 
